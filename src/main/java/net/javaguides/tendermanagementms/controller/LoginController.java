@@ -15,6 +15,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @RestController
 public class LoginController {
 
@@ -37,14 +40,18 @@ public class LoginController {
                             authenticationRequest.getPassword()
                     )
             );
-        } catch (AuthenticationException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or pwd");
+            UserDetails userDetails = loginService.loadUserByUsername(authenticationRequest.getEmail());
+            String jwt = jwtTokenUtil.generateToken(userDetails);
+            Map<String,Object> response = new HashMap<>();
+            response.put("jwt",jwt);
+            response.put("status",HttpStatus.OK.value());
+            return ResponseEntity.ok(response);
+
+
+        } catch (BadCredentialsException e) {
+            return new ResponseEntity<>("Invalid Credentials",HttpStatus.BAD_REQUEST);
         }
 
-        UserDetails userDetails = loginService.loadUserByUsername(authenticationRequest.getEmail());
-
-        String jwt = jwtTokenUtil.generateToken(userDetails);
-        return ResponseEntity.ok(jwt);
     }
 
 }

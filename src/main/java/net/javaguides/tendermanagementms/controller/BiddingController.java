@@ -6,13 +6,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RequestMapping("/bidding")
+@RestController
 public class BiddingController {
     private BiddingService biddingService;
 
 
     @PostMapping("/add")
-    public ResponseEntity<Object> postBidding(BiddingModel biddingModel) {
-        return null;
+    public ResponseEntity<Object> postBidding(@RequestBody BiddingModel biddingModel) {
+        return biddingService.postBidding(biddingModel);
     }
 
     @GetMapping("/list")

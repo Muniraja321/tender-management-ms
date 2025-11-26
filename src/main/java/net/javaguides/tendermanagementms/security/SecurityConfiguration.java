@@ -43,6 +43,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http.csrf().disable()
                 .authorizeHttpRequests()
+                .antMatchers("bidding/add").hasAuthority("BIDDER")
                 .antMatchers("/login", "/h2-console/**").permitAll()
                 .anyRequest().authenticated()
                 .and()
