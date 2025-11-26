@@ -6,10 +6,12 @@ import net.javaguides.tendermanagementms.repository.RoleRepository;
 import net.javaguides.tendermanagementms.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 @Component
-public class DataLoader {
+public class DataLoader implements ApplicationRunner {
 
     @Autowired
     private RoleRepository roleRepository;
@@ -17,36 +19,39 @@ public class DataLoader {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     public void run(ApplicationArguments args) throws InterruptedException {
 
-        roleRepository.save(new RoleModel("BIDDER"));
+       RoleModel bidderRole =  roleRepository.save(new RoleModel("BIDDER"));
 
-        roleRepository.save(new RoleModel( "APPROVER"));
+        RoleModel approvalRole = roleRepository.save(new RoleModel( "APPROVER"));
 
         userRepository.save(new UserModel(
                 1,
                 "bidder1",
                 "companyOne",
-                "bidder123$",
+                passwordEncoder.encode("bidder123$"),
                 "bidderemail@gmail.com",
-                new RoleModel(1)));
+                bidderRole));
 
         userRepository.save(new UserModel(
                 2,
                 "bidder2",
                 "companyTwo",
-                "bidder789$",
+                passwordEncoder.encode("bidder789$"),
                 "bidderemail2@gmail.com",
-                new RoleModel(1)
+                bidderRole
         ));
 
         userRepository.save(new UserModel(
                 3,
                 "approver",
                 "defaultCompany",
-                "approver1235",
+                passwordEncoder.encode("approver1235"),
                 "approveremail@gmail.com",
-                new RoleModel(2)
+                approvalRole
         ));
 
 

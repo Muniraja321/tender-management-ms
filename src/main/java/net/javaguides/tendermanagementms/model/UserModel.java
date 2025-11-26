@@ -1,7 +1,7 @@
 package net.javaguides.tendermanagementms.model;
 
 import javax.persistence.*;
-
+@Entity
 public class UserModel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
