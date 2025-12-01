@@ -8,6 +8,6 @@ import java.util.List;
 
 @Repository
 public interface BiddingRepository extends JpaRepository<BiddingModel,Integer> {
-    List<BiddingModel> findByBidAmountGreaterThan(double bidAmount);
+    List<BiddingModel> findByBidAmountGreaterThan(Double bidAmount);
 
 }

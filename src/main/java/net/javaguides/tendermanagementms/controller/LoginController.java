@@ -44,12 +44,10 @@ public class LoginController {
             String jwt = jwtTokenUtil.generateToken(userDetails);
             Map<String,Object> response = new HashMap<>();
             response.put("jwt",jwt);
-            response.put("status",HttpStatus.OK.value());
+            response.put("Status",HttpStatus.OK);
             return ResponseEntity.ok(response);
-
-
         } catch (BadCredentialsException e) {
-            return new ResponseEntity<>("Invalid Credentials",HttpStatus.BAD_REQUEST);
+           return new ResponseEntity<>("Invalid Credentials",HttpStatus.BAD_REQUEST);
         }
 
     }

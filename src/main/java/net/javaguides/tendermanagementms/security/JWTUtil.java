@@ -36,8 +36,8 @@ public class JWTUtil implements Serializable {
     }
 
     public <T> T getClaimFromToken(String token, Function <Claims, T> claimsResolver) {
-       final Claims claims =  getAllClaimsFromToken(token);
-        return claimsResolver.apply(claims);
+      final Claims claims = getAllClaimsFromToken(token);
+      return claimsResolver.apply(claims);
     }
 
     //    Secret key will be required for retrieving data from token
@@ -58,9 +58,9 @@ public class JWTUtil implements Serializable {
     //generate token for user
 
     public String generateToken(UserDetails userDetails) {
-        Map<String,Object> claims = new HashMap<>();
-        claims.put("roles",userDetails.getAuthorities());
-        return doGenerateToken(claims,userDetails.getUsername());
+       Map<String,Object> claims = new HashMap<>();
+       claims.put("Role",userDetails.getAuthorities());
+       return doGenerateToken(claims,userDetails.getUsername());
     }
 
     //        Generate the token from the claims and required details
@@ -71,7 +71,7 @@ public class JWTUtil implements Serializable {
                    .setClaims(claims)
                    .setSubject(subject)
                    .setIssuedAt(new Date(System.currentTimeMillis()))
-                   .setExpiration(new Date(System.currentTimeMillis()+ JWT_TOKEN_VALIDITY))
+                   .setExpiration(new Date(System.currentTimeMillis()+JWT_TOKEN_VALIDITY))
                    .signWith(SignatureAlgorithm.HS256,secretKey)
                    .compact();
         }

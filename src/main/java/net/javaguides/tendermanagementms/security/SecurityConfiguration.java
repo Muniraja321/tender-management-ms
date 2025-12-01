@@ -4,6 +4,7 @@ import net.javaguides.tendermanagementms.service.LoginService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -14,6 +15,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
@@ -44,8 +46,12 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         http.csrf().disable()
                 .authorizeHttpRequests()
                 .antMatchers("bidding/add").hasAuthority("BIDDER")
+                .antMatchers("bidding/update/**","bidding/delete/**").hasAnyAuthority("APPROVER")
+                .antMatchers("bidding/list").hasAnyAuthority("BIDDER","APPROVER")
                 .antMatchers("/login", "/h2-console/**").permitAll()
                 .anyRequest().authenticated()
+                .and()
+                .exceptionHandling().authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
                 .and()
                 .headers().frameOptions().disable() // al
                 .and()

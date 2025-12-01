@@ -19,26 +19,28 @@ public class LoginService implements UserDetailsService {
     @Autowired
     private UserRepository userRepository;
 
+    //
+
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         UserModel user = userRepository.findByEmail(email);
         if(user == null){
-            throw new UsernameNotFoundException("user not found with this email" + email);
+            throw new UsernameNotFoundException("User not found with this email" + user);
         }
         List<GrantedAuthority> authorities = buildUserAuthority(user.getRole().getRolename());
-
         return buildUserForAuthentication(user,authorities);
+
+
     }
 
     //This must return Spring Security’s User object:
+    // Spring security doesn't understand our custom usermodel directly so we are returning as spring security usermodel to understand for authenticationa nd authorization
     private UserDetails buildUserForAuthentication(UserModel user, List<GrantedAuthority> authorities) {
-
         return new User(
                 user.getEmail(),
                 user.getPassword(),
                 authorities
         );
-
     }
 
 //    This converts your RoleModel → SimpleGrantedAuthority
@@ -50,9 +52,8 @@ public class LoginService implements UserDetailsService {
 
     private List<GrantedAuthority> buildUserAuthority(String userRole) {
 
-        List<GrantedAuthority> authorities = new ArrayList<>();
-        authorities.add(new SimpleGrantedAuthority("ROLE_" + userRole));
-        return authorities;
-
+       List<GrantedAuthority> authorities = new ArrayList<>();
+       authorities.add(new SimpleGrantedAuthority("ROLE_" + userRole));
+       return authorities;
     }
 }
