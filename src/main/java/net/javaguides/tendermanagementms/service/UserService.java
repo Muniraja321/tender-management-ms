@@ -10,8 +10,10 @@ import org.springframework.stereotype.Service;
 public class UserService {
 
 
+
     @Autowired
     private UserRepository userRepository;
+
 
     @Autowired
     private RoleRepository roleRepository;
@@ -19,6 +21,7 @@ public class UserService {
     //get user by email
 
     public UserModel getUserByEmail(String email){
+
         return userRepository.findByEmail(email);
     }
 }

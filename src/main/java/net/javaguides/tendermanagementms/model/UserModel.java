@@ -1,6 +1,7 @@
 package net.javaguides.tendermanagementms.model;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
+
 @Entity
 public class UserModel {
     @Id
@@ -21,7 +22,7 @@ public class UserModel {
     @Column(name = "email", unique = true)
     private String email;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "role", referencedColumnName = "id")
     private RoleModel role;
 

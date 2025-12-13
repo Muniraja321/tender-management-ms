@@ -32,23 +32,22 @@ public class LoginController {
     private JWTUtil jwtTokenUtil;
 
     @PostMapping("/login")
-    public Object authenticateUser(@RequestBody LoginDTO authenticationRequest) throws Exception{
-        try{
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            authenticationRequest.getEmail(),
-                            authenticationRequest.getPassword()
-                    )
-            );
-            UserDetails userDetails = loginService.loadUserByUsername(authenticationRequest.getEmail());
-            String jwt = jwtTokenUtil.generateToken(userDetails);
-            Map<String,Object> response = new HashMap<>();
-            response.put("jwt",jwt);
-            response.put("Status",HttpStatus.OK);
-            return ResponseEntity.ok(response);
-        } catch (BadCredentialsException e) {
-           return new ResponseEntity<>("Invalid Credentials",HttpStatus.BAD_REQUEST);
-        }
+    public Object authenticateUser(@RequestBody LoginDTO authenticationRequest) throws Exception {
+      try{
+          authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authenticationRequest.getEmail(),authenticationRequest.getPassword()));
+
+          UserDetails userDetails = loginService.loadUserByUsername(authenticationRequest.getEmail());
+
+          String jwt =  jwtTokenUtil.generateToken(userDetails);
+
+          Map<String,Object> response = new HashMap<>();
+          response.put("jwt",jwt);
+          response.put("Status",HttpStatus.OK);
+
+          return ResponseEntity.ok(response);
+      } catch (BadCredentialsException e) {
+          return new ResponseEntity<>("Invalid Credentials",HttpStatus.BAD_REQUEST);
+      }
 
     }
 

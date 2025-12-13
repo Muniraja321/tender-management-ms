@@ -3,6 +3,8 @@ package net.javaguides.tendermanagementms.service;
 import net.javaguides.tendermanagementms.model.UserModel;
 import net.javaguides.tendermanagementms.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
@@ -13,47 +15,25 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+
 @Service
-public class LoginService implements UserDetailsService {
+public class LoginService implements UserDetailsService{
 
     @Autowired
     private UserRepository userRepository;
 
-    //
 
     @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        UserModel user = userRepository.findByEmail(email);
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+
+       UserModel user = userRepository.findByEmail(username);
+
         if(user == null){
-            throw new UsernameNotFoundException("User not found with this email" + user);
+            throw new UsernameNotFoundException("usernot found with this email");
         }
-        List<GrantedAuthority> authorities = buildUserAuthority(user.getRole().getRolename());
-        return buildUserForAuthentication(user,authorities);
-
-
-    }
-
-    //This must return Spring Security’s User object:
-    // Spring security doesn't understand our custom usermodel directly so we are returning as spring security usermodel to understand for authenticationa nd authorization
-    private UserDetails buildUserForAuthentication(UserModel user, List<GrantedAuthority> authorities) {
         return new User(
-                user.getEmail(),
-                user.getPassword(),
-                authorities
+                user.getEmail(),user.getPassword(),List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().getRolename()))
         );
-    }
-
-//    This converts your RoleModel → SimpleGrantedAuthority
-//
-//    Example:
-//
-//            "BIDDER" → "ROLE_BIDDER"
-//    Spring Security needs role in this format.
-
-    private List<GrantedAuthority> buildUserAuthority(String userRole) {
-
-       List<GrantedAuthority> authorities = new ArrayList<>();
-       authorities.add(new SimpleGrantedAuthority("ROLE_" + userRole));
-       return authorities;
     }
 }

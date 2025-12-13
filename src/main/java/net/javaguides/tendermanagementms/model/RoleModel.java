@@ -1,6 +1,7 @@
 package net.javaguides.tendermanagementms.model;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
+
 
 @Entity
 public class RoleModel {

@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class BiddingService {
@@ -26,112 +27,78 @@ public class BiddingService {
     @Autowired
     private UserService userService;
 
-//to add the Bidding using BiddingModel object
+    public ResponseEntity<Object> postBidding(BiddingModel biddingModel){
+       String email =  getCurrentEmail();
+       UserModel user = userService.getUserByEmail(email);
 
-//created->201
-
-//badRequest->400
-
-
-    public ResponseEntity<Object> postBidding(BiddingModel biddingModel) {
-        try{
-            String email = getCurrentEmail();
-            UserModel user = userService.getUserByEmail(email);
-
-            if(!"BIDDER".equalsIgnoreCase(user.getRole().getRolename())){
-                return new ResponseEntity<>("Forbidden", HttpStatus.FORBIDDEN);
-            }
-            biddingModel.setBiddingId(user.getId());
-            biddingModel.setDate0fBidding(getCurrentDate());
-
-            biddingRepository.save(biddingModel);
-
-            return new ResponseEntity<>(biddingModel,HttpStatus.CREATED);
-        } catch (Exception e) {
-            return new ResponseEntity<>("Bad Request",HttpStatus.BAD_REQUEST);
-        }
-    }
-
-//to get the bidding details which are greater than the given bidAmount
-
-//ok()->200
-
-//badRequest()->400
-    public ResponseEntity<Object> getBidding(Double bidAmount) {
-       List<BiddingModel> results =  biddingRepository.findByBidAmountGreaterThan(bidAmount);
-       if(results.isEmpty()){
-           return new ResponseEntity<>("No data available", HttpStatus.BAD_REQUEST);
+       if(user == null){
+           return ResponseEntity.status(400).body("Not found in DB");
        }
-        return new ResponseEntity<>(results,HttpStatus.OK);
+
+       biddingModel.setBiddingId(user.getId());
+       biddingModel.setDate0fBidding(getCurrentDate());
+       biddingRepository.save(biddingModel);
+        return ResponseEntity.status(201).body(biddingModel);
     }
 
-//to update the bidding status
+    public ResponseEntity<Object> getBidding(Double bidAmount){
 
-//ok->200
+       List<BiddingModel> biddingModel = biddingRepository.findByBidAmountGreaterThan(bidAmount);
 
-//badRequest->400
-    public ResponseEntity<Object> updateBidding(int id, BiddingModel model) {
-        try{
-            BiddingModel biddingModel = biddingRepository.findById(id).orElse(null);
-            if(biddingModel == null){
-                return new ResponseEntity<>("Bad Request",HttpStatus.BAD_REQUEST);
-            }
+       if(biddingModel.isEmpty()){
+           return ResponseEntity.status(400).body("Not found in DB");
+       }
+        return ResponseEntity.status(200).body(biddingModel);
+    }
 
-            String email = getCurrentEmail();
-            UserModel user = userService.getUserByEmail(email);
-            if(!"APPROVER".equals(user.getRole().getRolename())){
-                return new ResponseEntity<>("FORBIDDEN", HttpStatus.FORBIDDEN);
-            }
-            biddingModel.setStatus(model.getStatus());
-            biddingRepository.save(biddingModel);
-            return new ResponseEntity<>(biddingModel, HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>("BAD REQUEST",HttpStatus.BAD_REQUEST);
+    public ResponseEntity<Object> updateBidding(int id, BiddingModel biddingModel){
+
+        String email = getCurrentEmail();
+        UserModel user = userService.getUserByEmail(email);
+
+        if(user == null){
+            return ResponseEntity.status(400).body("Not Found in DB");
         }
+
+        Optional<BiddingModel> bidModel = biddingRepository.findById(id);
+
+        if(!bidModel.isPresent()){
+            return ResponseEntity.status(400).body("Not found in DB");
+        }
+
+        BiddingModel existing = bidModel.get();
+        existing.setStatus(biddingModel.getStatus());
+        biddingRepository.save(existing);
+        return ResponseEntity.status(200).body(existing);
     }
 
- //to delete the Bidding by using id
+    public ResponseEntity<Object> deleteBidding(int id){
 
-//approver and only the creater of that particular Bidding can delete
-
-//noContent->204
-
-//badRequest->400
-
-//forbidden->403
-
-
-    public ResponseEntity<Object> deleteBidding(int id) {
         try{
-            BiddingModel biddingModel  = biddingRepository.findById(id).orElse(null);
-            System.out.println("FOUND MODEL = " + biddingModel);
-            if(biddingModel == null){
-                return new ResponseEntity<>("Bad request",HttpStatus.BAD_REQUEST);
-            }
             String email = getCurrentEmail();
-            System.out.println("CURRENT EMAIL = " + email);
             UserModel user = userService.getUserByEmail(email);
-            System.out.println("USER FOUND = " + user);
-            System.out.println("USER ROLE = " + user.getRole().getRolename());
-            System.out.println("BIDDER ID = " + biddingModel.getBidderId());
-            System.out.println("USER ID = " + user.getId());
-            if("APPROVER".equals(user.getRole().getRolename()) || biddingModel.getBidderId() == user.getId()){
-                biddingRepository.delete(biddingModel);
-                return ResponseEntity.noContent().build();
-            }else{
-                return new ResponseEntity<>("You dont have permission to delete",HttpStatus.FORBIDDEN);
+            if(user == null){
+                return ResponseEntity.status(400).body("Not Found in DB");
             }
 
+            Optional<BiddingModel> bidModel = biddingRepository.findById(id);
+            if(!bidModel.isPresent()){
+                return ResponseEntity.status(400).body("Not Found in DB");
+            }
+
+            if(user.getId() == bidModel.get().getBidderId() || user.getRole().getRolename().equalsIgnoreCase("APPROVER")){
+                biddingRepository.deleteById(id);
+                return ResponseEntity.status(204).body("Deleted Successfully");
+            }
+            return ResponseEntity.status(403).body("You dont have permission");
         } catch (Exception e) {
-            e.printStackTrace();
-            return new ResponseEntity<>("Bad Request",HttpStatus.BAD_REQUEST);
+            return ResponseEntity.status(400).body("Not Found");
         }
     }
 
     private String getCurrentEmail(){
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        if(principal instanceof UserDetails){
+        if( principal instanceof UserDetails){
             return ((UserDetails) principal).getUsername();
         }
         return null;
@@ -140,6 +107,5 @@ public class BiddingService {
     private String getCurrentDate(){
         return new SimpleDateFormat("dd/MM/yyyy").format(new Date());
     }
-
 
 }
